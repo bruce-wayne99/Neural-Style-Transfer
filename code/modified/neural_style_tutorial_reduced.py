@@ -254,8 +254,10 @@ def get_input_optimizer(input_img):
     optimizer = optim.LBFGS([input_img.requires_grad_()])
     return optimizer
 
+print('before unpacking')
 with open('/scratch/pca_1000.pickle') as outfile:
     ipca_1000 = cPickle.load(outfile)
+print('after unpacking')
 
 def run_style_transfer(cnn, normalization_mean, normalization_std,
                        content_img, style_img, input_img, num_steps=300,
@@ -290,8 +292,12 @@ def run_style_transfer(cnn, normalization_mean, normalization_std,
             print(target_style.size())
 
             # Reducing using PCA
-            gram_matrices = ipca_1000.transform(gram_matrices)
-            target_style = ipca_1000.transform(target_style)
+            gram_matrices = ipca_1000.transform(gram_matrices.numpy())
+            target_style = ipca_1000.transform(target_style.numpy())
+            gram_matrices = torch.from_numpy(gram_matrices)
+            target_style = torch.from_numpy(target_style)
+            print(gram_matrices.size())
+            print(target_style.size())
             style_score = F.mse_loss(gram_matrices, target_style)
             # for sl in style_losses:
             #     style_score += sl.loss
